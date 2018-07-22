@@ -1,44 +1,48 @@
 <?php
+namespace App;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$app = new \Slim\App();
+$users = Generator::generate(100);
 
-$companies = [
-    [ 'name' => 'Adams-Reichel','phone' => '1-986-987-9109 x56053' ],
-    [ 'name' => 'Dibbert-Morissette','phone' => '439.584.3132 x735' ],
-    [ 'name' => 'Ledner and Sons','phone' => '979-539-4173 x048' ],
-    [ 'name' => 'Kiehn-Mann','phone' => '972-379-1995 x61054' ],
-    [ 'name' => 'Bosco, Pouros and Larson','phone' => '887-919-2730 x49977' ],
-    [ 'name' => 'Ledner and Sons','phone' => '979-539-4173 x048' ],
-    [ 'name' => 'Adams-Reichel','phone' => '1-986-987-9109 x56053' ],
-    [ 'name' => 'Dibbert-Morissette','phone' => '439.584.3132 x735' ],
-    [ 'name' => 'Ledner and Sons','phone' => '979-539-4173 x048' ],
-    [ 'name' => 'Kiehn-Mann','phone' => '972-379-1995 x61054' ],
-    [ 'name' => 'Bosco, Pouros and Larson','phone' => '887-919-2730 x49977' ],
-    [ 'name' => 'Ledner and Sons','phone' => '979-539-4173 x048' ],
-    [ 'name' => 'Adams-Reichel','phone' => '1-986-987-9109 x56053' ],
-    [ 'name' => 'Dibbert-Morissette','phone' => '439.584.3132 x735' ],
-    [ 'name' => 'Ledner and Sons','phone' => '979-539-4173 x048' ],
-    [ 'name' => 'Kiehn-Mann','phone' => '972-379-1995 x61054' ],
-    [ 'name' => 'Bosco, Pouros and Larson','phone' => '887-919-2730 x49977' ],
-    [ 'name' => 'Ledner and Sons','phone' => '979-539-4173 x048' ],
-    [ 'name' => 'Adams-Reichel','phone' => '1-986-987-9109 x56053' ],
-    [ 'name' => 'Dibbert-Morissette','phone' => '439.584.3132 x735' ],
-    [ 'name' => 'Ledner and Sons','phone' => '979-539-4173 x048' ],
-    [ 'name' => 'Kiehn-Mann','phone' => '972-379-1995 x61054' ],
-    [ 'name' => 'Bosco, Pouros and Larson','phone' => '887-919-2730 x49977' ],
-    [ 'name' => 'Ledner and Sons','phone' => '979-539-4173 x048' ]
+$configuration = [
+    'settings' => [
+        'displayErrorDetails' => true,
+    ],
 ];
 
-$app->get('/companies', function ($request, $response) use ($companies) {
+$app = new \Slim\App($configuration);
+
+$container = $app->getContainer();
+$container['renderer'] = new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
+
+$app->get('/', function ($request, $response) {
+    return $this->renderer->render($response, 'index.phtml');
+});
+
+/*Реализуйте обработчики для списка пользователей /users и вывода конкретного пользователя /users/{id}. Список пользователей генерируется в начале скрипта. Используйте пейджинг для вывода пользователей. По-умолчанию показывается 5 пользователей.*/ 
+
+$app->get('/users', function ($request, $response) use ($users) {
     $page = $request->getQueryParam('page', 1);
     $per = $request->getQueryParam('per', 5);
     $offset = ($page - 1) * $per;
 
-    $sliceOfCompanies = array_slice($companies, $offset, $per);
-    $response->write(json_encode($sliceOfCompanies));
-    return $response;
+    $sliceOfUsers = array_slice($users, $offset, $per);
+    $params = [
+        'users' => $sliceOfUsers,
+        'page' => $page
+    ];
+    return $this->renderer->render($response, 'users/index.phtml', $params);
+});
+
+$app->get('/users/{id}', function ($request, $response, $args) use ($users) {
+    $id = (int) $args['id'];
+    $user = collect($users)->first(function ($user) use ($id) {
+        return $user['id'] == $id;
+    });
+    $params = ['user' => $user];
+    return $this->renderer->render($response, 'users/show.phtml', $params);
 });
 
 $app->run();
+
