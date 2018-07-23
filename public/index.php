@@ -12,16 +12,11 @@ $configuration = [
 ];
 
 $app = new \Slim\App($configuration);
-
+// Подключение шаблонизатора к слиму. Указываем папку с шаблонами
 $container = $app->getContainer();
 $container['renderer'] = new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
 
-$app->get('/', function ($request, $response) {
-    return $this->renderer->render($response, 'index.phtml');
-});
-
-/*Реализуйте обработчики для списка пользователей /users и вывода конкретного пользователя /users/{id}. Список пользователей генерируется в начале скрипта. Используйте пейджинг для вывода пользователей. По-умолчанию показывается 5 пользователей.*/ 
-
+// Выводит список пользователей
 $app->get('/users', function ($request, $response) use ($users) {
     $page = $request->getQueryParam('page', 1);
     $per = $request->getQueryParam('per', 5);
@@ -35,6 +30,7 @@ $app->get('/users', function ($request, $response) use ($users) {
     return $this->renderer->render($response, 'users/index.phtml', $params);
 });
 
+// Выводит информацию о пользователях
 $app->get('/users/{id}', function ($request, $response, $args) use ($users) {
     $id = (int) $args['id'];
     $user = collect($users)->first(function ($user) use ($id) {
