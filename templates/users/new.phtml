@@ -1,37 +1,41 @@
 <form action="/users" method="post">
   <div>
     <label>
-        Имя
+        Имя : 
       <input type="text" name="user[name]" value="<?= htmlspecialchars($user['name']) ?>">
     </label>
     <?php if (isset($errors['name'])): ?>
       <div><?= $errors['name'] ?></div>
     <?php endif ?>
   </div>
+  <br>
   <div>
     <label>
-        Email
+        Email:
       <input type="email" required name="user[email]" value="<?= htmlspecialchars($user['email']) ?>">
     </label>
     <?php if (isset($errors['email'])): ?>
       <div><?= $errors['email'] ?></div>
     <?php endif ?>
   </div>
+  <br>
   <div>
     <label>
-        Пароль
+        Пароль:
       <input type="password" required name="user[password]" value="<?= htmlspecialchars($user['password']) ?>">
     </label>
     <?php if (isset($errors['password'])): ?>
       <div><?= $errors['password'] ?></div>
     <?php endif ?>
   </div>
+  <br>
   <div>
     <label>
-        Подтверждение пароля
+        Подтверждение пароля:
       <input type="password" required name="user[passwordConfirmation]" value="<?= htmlspecialchars($user['passwordConfirmation']) ?>">
     </label>
   </div>
+  <br>
   <div>
     <label>
       Город
@@ -46,6 +50,7 @@
       <div><?= $errors['city'] ?></div>
     <?php endif ?>
   </div>
+  <br>
   <input type="submit" value="Sign Up">
 </form>
 

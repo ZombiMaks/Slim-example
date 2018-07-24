@@ -10,9 +10,16 @@ class Validator implements ValidatorInterface
         $errors = [];
         if (empty($user['name'])) {
             $errors['name'] = "Can't be blank";
-        }elseif(empty($user['email'])){
+        }
+        
+        if (empty($user['email'])) {
             $errors['email'] = "Can't be blank";
         }
+
+        if (empty($user['password'])) {
+            $errors['password'] = "Can't be blank";
+        }
+
         return $errors; 
         // END
     }
