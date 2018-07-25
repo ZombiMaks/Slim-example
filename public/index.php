@@ -16,7 +16,6 @@ $configuration = [
 // Начало сессии в PHP
 session_start(); // по умолчанию не требует хранения сессии
 
-// регистрация
 $app = new \Slim\App($configuration);
 
 $repo = new Repository();
@@ -41,9 +40,24 @@ $app->get('/', function ($request, $response) {
 });
 
 $app->get('/users', function ($request, $response) use ($repo) {
+    $users = $repo->all();
+    $term = $request->getQueryParam('term', '');
+    $sortedUsers = collect($users)->sortBy('name');
+    $page = $request->getQueryParam('page', 1);
+    $per = $request->getQueryParam('per', 5);
+    $offset = ($page - 1) * $per;
+
+    $userSearch = collect($sortedUsers)->filter(function ($user) use ($term) {
+        return s($user['name'])->startsWith($term, false);
+    });
+
+    $sliceOfUsers = array_slice($users, $offset, $per);
     
     $params = [
-        'users' => $repo->all()
+        'users' => $users,
+        'page' => $page,
+        'userSearch' => $userSearch,
+        'term' => $term
     ];
     return $this->renderer->render($response, 'users/index.phtml', $params);
 });
@@ -72,6 +86,30 @@ $app->get('/users/new', function ($request, $response) {
         'errors' => []
     ];
     return $this->renderer->render($response, "users/new.phtml", $params);
+});
+
+// Поиск пользователей
+$app->get('/search', function ($request, $response) use ($users){
+    $term = $request->getQueryParam('term', '');
+    $sortedUsers = collect($users)->sortBy('name');
+    $userSearch = collect($sortedUsers)->filter(function ($user) use ($term) {
+        return s($user['firstName'])->startsWith($term, false);
+    });
+    $params = [
+        'userSearch' => $userSearch,
+        'term' => $term
+        ];
+    return $this->renderer->render($response, 'users/search.phtml', $params);
+});
+
+// Выводит информацию о пользователях
+$app->get('/users/{id}', function ($request, $response, $args) use ($users) {
+    $id = (int) $args['id'];
+    $user = collect($users)->first(function ($user) use ($id) {
+        return $user['id'] == $id;
+    });
+    $params = ['user' => $user];
+    return $this->renderer->render($response, 'users/show.phtml', $params);
 });
 
 $app->run();
