@@ -13,19 +13,35 @@ $configuration = [
     ],
 ];
 
+// Начало сессии в PHP
+session_start(); // по умолчанию не требует хранения сессии
+
 // регистрация
 $app = new \Slim\App($configuration);
 
 $repo = new Repository();
 
 $container = $app->getContainer();
+
 $container['renderer'] = new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
 
+$container['flash'] = function () {
+    return new \Slim\Flash\Messages();
+};
+
 $app->get('/', function ($request, $response) {
-    return $this->renderer->render($response, 'index.phtml');
+
+    // Извлечение flash сообщений установленных на предыдущем запросе
+    $flash = $this->flash->getMessages();
+
+    // выводит флеш сообщения в шаблон
+    $params = ['flash' => $flash];
+
+    return $this->renderer->render($response, 'index.phtml', $params);
 });
 
 $app->get('/users', function ($request, $response) use ($repo) {
+    
     $params = [
         'users' => $repo->all()
     ];
@@ -38,6 +54,9 @@ $app->post('/users', function ($request, $response) use ($repo) {
     $errors = $validator->validate($user);
     if (count($errors) === 0) {
         $repo->save($user);
+        // Добавление flash сообщения. Оно станет доступным на следующий HTTP запрос.
+        $this->flash->addMessage('success', 'Usser Added');
+        
         return $response->withRedirect('/');
     }
     $params = [
@@ -56,5 +75,7 @@ $app->get('/users/new', function ($request, $response) {
 });
 
 $app->run();
+
+
 
 
