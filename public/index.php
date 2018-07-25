@@ -40,17 +40,25 @@ $app->get('/', function ($request, $response) {
 });
 
 $app->get('/users', function ($request, $response) use ($repo) {
+
+    // пользователи
     $users = $repo->all();
+
+    // извлечение данных из запроса /user/term=...
     $term = $request->getQueryParam('term', '');
-    $sortedUsers = collect($users)->sortBy('name');
     $page = $request->getQueryParam('page', 1);
     $per = $request->getQueryParam('per', 5);
+    
+    // сортировка пользователей
+    $sortedUsers = collect($users)->sortBy('name');
     $offset = ($page - 1) * $per;
-
+    
+    // поиск пользователя
     $userSearch = collect($sortedUsers)->filter(function ($user) use ($term) {
         return s($user['name'])->startsWith($term, false);
     });
 
+    // отображает количество пользователей на страницу
     $sliceOfUsers = array_slice($users, $offset, $per);
     
     $params = [
@@ -86,20 +94,6 @@ $app->get('/users/new', function ($request, $response) {
         'errors' => []
     ];
     return $this->renderer->render($response, "users/new.phtml", $params);
-});
-
-// Поиск пользователей
-$app->get('/search', function ($request, $response) use ($users){
-    $term = $request->getQueryParam('term', '');
-    $sortedUsers = collect($users)->sortBy('name');
-    $userSearch = collect($sortedUsers)->filter(function ($user) use ($term) {
-        return s($user['firstName'])->startsWith($term, false);
-    });
-    $params = [
-        'userSearch' => $userSearch,
-        'term' => $term
-        ];
-    return $this->renderer->render($response, 'users/search.phtml', $params);
 });
 
 // Выводит информацию о пользователях
